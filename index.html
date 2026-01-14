@@ -2,323 +2,1627 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=0.9">
-    <title>버드 소트 퍼즐</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐦 버드 소트 퍼즐 🐦</title>
     <style>
         * {
-            -webkit-tap-highlight-color: transparent;
-            -webkit-user-drag: none;
-            user-select: none;
-            touch-action: manipulation;
-            outline: none;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-        
-        a, input, textarea {
-            -webkit-tap-highlight-color: transparent;
-            outline: none;
-        }
-        
-        a:active, a:focus{
-            background-color: transparent !important;
-            outline: none !important;
-        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Arial', sans-serif;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080"><defs><linearGradient id="sky" x1="0%" y1="0%" x2="0%" y2="100%"><stop offset="0%" style="stop-color:%2387CEEB"/><stop offset="50%" style="stop-color:%23B0E0E6"/><stop offset="100%" style="stop-color:%2398FB98"/></linearGradient></defs><rect width="1920" height="1080" fill="url(%23sky)"/><ellipse cx="200" cy="150" rx="80" ry="40" fill="white" opacity="0.7"/><ellipse cx="1600" cy="200" rx="100" ry="50" fill="white" opacity="0.6"/><ellipse cx="800" cy="100" rx="90" ry="45" fill="white" opacity="0.65"/><circle cx="1700" cy="150" r="60" fill="%23FFE4B5" opacity="0.8"/></svg>') center/cover fixed;
+            min-height: 100vh;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
             align-items: center;
-            background-color: #2c3e50;
-            color: #ecf0f1;
-            margin-top: 20px;
+            padding: 20px;
+        }
+
+        .game-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 30px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 1100px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 5px;
+            color: #5B4FC7;
+            font-size: 2.8em;
+            margin-bottom: 15px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.2);
+            font-weight: bold;
         }
 
-        h2 {
-            font-size: 1.5rem;
-            font-weight: 300;
-            margin-top: 0;
+        .world-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
             margin-bottom: 20px;
-            color: #3498db;
+            flex-wrap: wrap;
         }
 
-        #game-board {
-            display: grid;
-            grid-template-columns: repeat(4, auto); 
-            gap: 20px; 
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: #34495e;
+        .world-btn {
+            padding: 12px 25px;
+            border: 3px solid #667eea;
             border-radius: 15px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
-            transition: all 0.3s ease-in-out;
+            background: white;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
-        .branch {
+        .world-btn:hover {
+            background: #f0f0ff;
+            transform: translateY(-2px);
+        }
+
+        .world-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .world-btn.add-world {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border-color: #4CAF50;
+        }
+
+        .info-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding: 15px 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            color: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .info-item {
+            font-size: 1.3em;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .info-item span {
+            background: rgba(255,255,255,0.3);
+            padding: 5px 15px;
+            border-radius: 10px;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .level-controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .level-nav-btn {
+            background: rgba(255,255,255,0.3);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.3em;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .level-nav-btn:hover:not(:disabled) {
+            background: rgba(255,255,255,0.5);
+            transform: scale(1.1);
+        }
+
+        .level-nav-btn:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        /* 에디터 내부 네비게이션 버튼 스타일 오버라이드 */
+        .modal-content .level-nav-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .modal-content .level-nav-btn:hover:not(:disabled) {
+            background: linear-gradient(135deg, #7d8ff0 0%, #8b5bb0 100%);
+            transform: scale(1.1);
+        }
+
+        .modal-content .level-nav-btn:disabled {
+            background: #ccc;
+            opacity: 0.5;
+        }
+
+        .game-area {
+            background: linear-gradient(180deg, #87CEEB 0%, #E0F6FF 100%);
+            border-radius: 20px;
+            padding: 30px 20px;
+            margin-bottom: 25px;
+            min-height: 450px;
+            box-shadow: inset 0 4px 10px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-area::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: linear-gradient(180deg, transparent 0%, #90EE90 100%);
+            pointer-events: none;
+        }
+
+        .tubes-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            position: relative;
+            z-index: 10;
+        }
+
+        .tube-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .tube-wrapper:hover:not(.disabled) {
+            transform: translateY(-8px);
+        }
+
+        .tube-wrapper.selected {
+            transform: translateY(-12px) scale(1.05);
+        }
+
+        .tube-wrapper.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .tube {
             width: 70px;
             height: 280px;
-            border: 4px solid #7f8c8d;
-            border-radius: 10px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.6) 100%);
+            border: 4px solid #8B7355;
+            border-radius: 15px 15px 20px 20px;
+            padding: 8px;
             display: flex;
             flex-direction: column-reverse;
-            padding: 5px;
-            background-color: #95a5a6;
-            cursor: pointer;
-            transition: background-color 0.2s, transform 0.2s;
+            gap: 4px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+            position: relative;
         }
 
-        .branch:hover {
-            transform: translateY(-5px);
+        .tube-wrapper.selected .tube {
+            border-color: #FFD700;
+            box-shadow: 0 0 25px rgba(255, 215, 0, 0.8), 0 8px 20px rgba(0,0,0,0.3);
+            background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.8) 100%);
         }
 
-        .bird {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            margin: 5px auto 0;
-            cursor: pointer;
-            border: 4px solid transparent;
-            font-size: 35px;
-            line-height: 60px;
-            text-align: center;
-            user-select: none;
-            transition: transform 0.2s, border 0.2s, box-shadow 0.2s;
-        }
-        
-        /* 선택된 새들의 스타일을 더 강조합니다. */
-        .bird.selected {
-            border: 4px solid #f1c40f;
-            transform: scale(1.1);
-            box-shadow: 0 0 20px rgba(241, 196, 15, 0.8);
+        .tube::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                rgba(255,255,255,0.3) 0%, 
+                transparent 20%, 
+                transparent 80%, 
+                rgba(0,0,0,0.1) 100%);
+            border-radius: 11px 11px 16px 16px;
+            pointer-events: none;
         }
 
-        #reset-button {
-            padding: 12px 25px;
-            font-size: 18px;
-            cursor: pointer;
-            border: none;
+        .bird-in-tube {
+            height: 62px;
             border-radius: 8px;
-            background-color: #e74c3c;
-            color: white;
-            transition: background-color 0.3s;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+            opacity: 1;
+            transform: scale(1) translateY(0);
         }
 
-        #reset-button:hover {
-            background-color: #c0392b;
+        .bird-in-tube.pop-in {
+            animation: birdPop 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .bird-in-tube.moving {
+            opacity: 0;
+            transform: scale(0.5) translateY(-20px);
+        }
+
+        @keyframes birdPop {
+            0% {
+                transform: scale(0) translateY(20px);
+                opacity: 0;
+            }
+            70% {
+                transform: scale(1.1) translateY(-5px);
+            }
+            100% {
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .bird-svg {
+            width: 55px;
+            height: 55px;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.4));
+        }
+
+        .buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 16px 32px;
+            font-size: 1.15em;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-undo {
+            background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+            color: white;
+        }
+
+        .btn-restart {
+            background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+            color: white;
+        }
+
+        .btn-hint {
+            background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+            color: white;
+        }
+
+        .btn-edit {
+            background: linear-gradient(135deg, #9C27B0 0%, #7B1FA2 100%);
+            color: white;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.75);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #fff 0%, #f8f9ff 100%);
+            padding: 40px;
+            border-radius: 30px;
+            animation: modalBounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.5);
+            border: 5px solid #667eea;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        @keyframes modalBounce {
+            0% {
+                transform: scale(0.3) rotate(-5deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.05) rotate(2deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 25px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        .modal p {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+        }
+
+        .editor-section {
+            margin-bottom: 25px;
+        }
+
+        .editor-section h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .editor-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .input-group label {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .input-group input,
+        .input-group select {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus,
+        .input-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .color-palette {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .color-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .color-item:hover {
+            border-color: #667eea;
+        }
+
+        .color-preview {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 3px solid #333;
+            cursor: pointer;
+        }
+
+        .tube-editor {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .editor-tube {
+            width: 70px;
+            height: 280px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.6) 100%);
+            border: 4px solid #8B7355;
+            border-radius: 15px 15px 20px 20px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 4px;
+            position: relative;
+        }
+
+        .editor-bird-slot {
+            height: 62px;
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .editor-bird-slot:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #667eea;
+        }
+
+        .editor-bird-slot img {
+            width: 55px;
+            height: 55px;
+        }
+
+        .editor-bird-slot .remove-btn {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 24px;
+            height: 24px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .editor-bird-slot:hover .remove-btn {
+            display: flex;
+        }
+
+        .color-tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            font-weight: bold;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 100;
+            margin-bottom: 8px;
+        }
+
+        .color-tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: rgba(0, 0, 0, 0.9);
+        }
+
+        .editor-bird-slot:hover .color-tooltip {
+            opacity: 1;
+        }
+
+        .tube-controls {
+            text-align: center;
+            margin-top: 10px;
+        }
+
+        .tube-controls button {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            margin: 0 5px;
+        }
+
+        .status-msg {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.25em;
+            min-height: 40px;
+            color: #667eea;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .branch-base {
+            width: 85px;
+            height: 15px;
+            background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+            border-radius: 50%;
+            margin-top: 5px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn-save {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+
+        .btn-cancel {
+            background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
+            color: white;
+        }
+
+        .world-info {
+            background: #f0f0ff;
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .world-info h3 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+
+        .delete-world-btn {
+            background: linear-gradient(135deg, #f44336 0%, #da190b 100%);
+            color: white;
+            padding: 8px 20px;
+            font-size: 0.9em;
+            margin-top: 10px;
         }
     </style>
 </head>
 <body>
-    <h1>버드 소트 퍼즐</h1>
-    <h2 id="level-display"></h2>
-    <div id="game-board"></div>
-    <button id="reset-button">처음부터 다시 시작</button>
+    <div class="game-container">
+        <div class="header">
+            <h1>🐦 버드 소트 퍼즐 🐦</h1>
+        </div>
+
+        <div class="world-selector" id="worldSelector"></div>
+
+        <div class="info-bar">
+            <div class="level-controls">
+                <button class="level-nav-btn" id="prevLevelBtn" onclick="previousLevel()">◀</button>
+                <div class="info-item">
+                    📊 레벨 <span id="level">1</span>
+                </div>
+                <button class="level-nav-btn" id="nextLevelBtn" onclick="nextLevel()">▶</button>
+            </div>
+            <div class="info-item">
+                🎯 이동 <span id="moves">0</span>
+            </div>
+        </div>
+
+        <div class="status-msg" id="statusMsg"></div>
+
+        <div class="game-area">
+            <div class="tubes-container" id="tubesContainer"></div>
+        </div>
+
+        <div class="buttons">
+            <button class="btn-undo" onclick="undoMove()" id="undoBtn">
+                <span>↩️</span> 되돌리기
+            </button>
+            <button class="btn-restart" onclick="restartLevel()">
+                <span>🔄</span> 다시 시작
+            </button>
+            <button class="btn-hint" onclick="showHint()" id="hintBtn">
+                <span>💡</span> 힌트
+            </button>
+            <button class="btn-edit" onclick="openLevelEditor()" id="editBtn">
+                <span>✏️</span> 레벨 편집
+            </button>
+        </div>
+    </div>
+
+    <!-- 승리 모달 -->
+    <div class="modal" id="winModal">
+        <div class="modal-content" style="text-align: center;">
+            <div style="font-size: 3em; margin-bottom: 20px;">⭐⭐⭐</div>
+            <h2>🎉 레벨 클리어! 🎉</h2>
+            <p>축하합니다!</p>
+            <p style="font-size: 1.6em; color: #667eea; font-weight: bold;">
+                이동 횟수: <span id="finalMoves">0</span>회
+            </p>
+            <div class="modal-buttons">
+                <button class="btn-restart" onclick="restartLevel(); closeModal('winModal')">
+                    🔄 다시 도전
+                </button>
+                <button class="btn-save" onclick="nextLevel(); closeModal('winModal')" style="font-size: 1.2em; padding: 20px 40px;">
+                    다음 레벨 ➡️
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 레벨 에디터 모달 -->
+    <div class="modal" id="editorModal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <h2>✏️ 레벨 에디터</h2>
+            
+            <div class="world-info" id="editorWorldInfo"></div>
+
+            <div class="editor-section">
+                <div style="display: flex; justify-content: center; align-items: center; gap: 15px; margin-bottom: 20px;">
+                    <button class="level-nav-btn" id="editorPrevBtn" onclick="editorPreviousLevel()" style="position: static; width: 45px; height: 45px; font-size: 1.5em;">◀</button>
+                    <div style="text-align: center;">
+                        <div style="font-size: 1.3em; font-weight: bold; color: #667eea;">레벨 <span id="editorLevelNum">1</span></div>
+                        <div style="font-size: 0.9em; color: #666;">총 <span id="editorTotalLevels">1</span>개 레벨</div>
+                    </div>
+                    <button class="level-nav-btn" id="editorNextBtn" onclick="editorNextLevel()" style="position: static; width: 45px; height: 45px; font-size: 1.5em;">▶</button>
+                </div>
+                <div style="display: flex; justify-content: center; gap: 10px; margin-bottom: 20px;">
+                    <button class="btn-save" onclick="addNewLevel()" style="padding: 12px 25px; font-size: 1em;">
+                        ➕ 새 레벨 추가
+                    </button>
+                    <button class="btn-cancel" onclick="deleteCurrentLevel()" id="deleteLevelBtn" style="padding: 12px 25px; font-size: 1em;">
+                        🗑️ 현재 레벨 삭제
+                    </button>
+                </div>
+            </div>
+
+            <div class="editor-section">
+                <h3>🎨 색상 팔레트</h3>
+                <div class="color-palette" id="colorPalette"></div>
+                <button class="btn-save" onclick="addNewColor()">➕ 색상 추가</button>
+            </div>
+
+            <div class="editor-section">
+                <h3>🧪 튜브 설정</h3>
+                <div class="editor-grid">
+                    <div class="input-group">
+                        <label>튜브 개수</label>
+                        <input type="number" id="numTubes" min="3" max="15" value="5" onchange="updateEditorTubes()">
+                    </div>
+                    <div class="input-group">
+                        <label>선택한 색상</label>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div id="selectedColorPreview" style="width: 40px; height: 40px; border-radius: 50%; border: 3px solid #333; background: #FF6B6B;"></div>
+                            <span id="selectedColorName">색상 0</span>
+                        </div>
+                    </div>
+                </div>
+                <p style="color: #666; margin-bottom: 15px;">💡 튜브를 클릭하여 선택한 색상의 새를 추가하세요. 새를 클릭하면 제거됩니다.</p>
+                <div class="tube-editor" id="tubeEditor"></div>
+            </div>
+
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('editorModal')">
+                    ❌ 취소
+                </button>
+                <button class="btn-save" onclick="saveLevel()">
+                    💾 저장
+                </button>
+                <button class="btn-cancel delete-world-btn" onclick="deleteCurrentWorld()" id="deleteWorldBtn" style="display: none;">
+                    🗑️ 월드 삭제
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 새 월드 생성 모달 -->
+    <div class="modal" id="newWorldModal">
+        <div class="modal-content" style="max-width: 500px;">
+            <h2>🌍 새 월드 만들기</h2>
+            <div class="input-group">
+                <label>월드 이름</label>
+                <input type="text" id="newWorldName" placeholder="예: 나만의 월드" maxlength="20">
+            </div>
+            <div class="modal-buttons">
+                <button class="btn-cancel" onclick="closeModal('newWorldModal')">
+                    ❌ 취소
+                </button>
+                <button class="btn-save" onclick="createNewWorld()">
+                    ✅ 생성
+                </button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        const colors = ['🦜', '🦉', '🐧', '🐤', '🦢', '🦩', '🕊️', '🦆', '🦃', '🦅', '🐓', '🦇'];
-        
-        const levelConfigs = [
-            { level: 1, numBranches: 4, numColorsToUse: 2, branchCapacity: 4, numEmptyBranches: 2 },
-            { level: 2, numBranches: 6, numColorsToUse: 4, branchCapacity: 4, numEmptyBranches: 2 },
-            { level: 3, numBranches: 8, numColorsToUse: 6, branchCapacity: 4, numEmptyBranches: 2 },
-            { level: 4, numBranches: 10, numColorsToUse: 8, branchCapacity: 4, numEmptyBranches: 2 },
-            { level: 5, numBranches: 10, numColorsToUse: 9, branchCapacity: 4, numEmptyBranches: 1 },
-            { level: 6, numBranches: 12, numColorsToUse: 10, branchCapacity: 4, numEmptyBranches: 2 },
-            { level: 7, numBranches: 12, numColorsToUse: 11, branchCapacity: 4, numEmptyBranches: 1 },
+        // 기본 레벨들
+        const DEFAULT_LEVELS = [
+            {tubes: [[0, 0, 1, 1], [2, 2, 0, 0], [1, 1, 2, 2], [], []]},
+            {tubes: [[0, 1, 2, 0], [1, 0, 1, 2], [2, 2, 1, 0], [], []]},
+            {tubes: [[0, 1, 2, 3], [1, 2, 3, 0], [2, 3, 0, 1], [3, 0, 1, 2], [], []]},
+            {tubes: [[0, 1, 0, 2], [3, 3, 1, 2], [1, 2, 0, 3], [2, 1, 3, 0], [], []]},
+            {tubes: [[0, 1, 2, 3], [4, 0, 1, 2], [3, 4, 0, 1], [2, 3, 4, 0], [1, 2, 3, 4], [], []]},
+            {tubes: [[0, 1, 2, 0], [3, 4, 1, 3], [2, 4, 2, 1], [4, 0, 3, 1], [3, 4, 0, 2], [], []]},
+            {tubes: [[0, 1, 2, 3], [4, 5, 0, 1], [2, 3, 4, 5], [0, 1, 2, 3], [4, 5, 0, 1], [2, 3, 4, 5], [], []]},
+            {tubes: [[0, 1, 2, 0], [3, 4, 5, 1], [2, 3, 4, 5], [0, 1, 2, 3], [4, 5, 0, 1], [2, 3, 4, 5], [], []]},
+            {tubes: [[0, 1, 2, 3], [4, 5, 6, 0], [1, 2, 3, 4], [5, 6, 0, 1], [2, 3, 4, 5], [6, 0, 1, 2], [3, 4, 5, 6], [], []]},
+            {tubes: [[0, 1, 0, 2], [3, 4, 5, 6], [1, 2, 3, 4], [5, 6, 0, 1], [2, 3, 4, 5], [6, 0, 1, 2], [3, 4, 5, 6], [], []]},
+            {tubes: [[0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 2, 3], [4, 5, 6, 7], [], []]},
+            {tubes: [[0, 1, 2, 0], [3, 4, 5, 6], [7, 1, 2, 3], [4, 5, 6, 7], [0, 1, 2, 3], [4, 5, 6, 7], [0, 1, 2, 3], [4, 5, 6, 7], [], []]},
+            {tubes: [[0, 1, 2, 3], [4, 5, 6, 7], [8, 0, 1, 2], [3, 4, 5, 6], [7, 8, 0, 1], [2, 3, 4, 5], [6, 7, 8, 0], [1, 2, 3, 4], [5, 6, 7, 8], [], []]},
+            {tubes: [[0, 1, 0, 2], [3, 4, 5, 6], [7, 8, 1, 2], [3, 4, 5, 6], [7, 8, 0, 1], [2, 3, 4, 5], [6, 7, 8, 0], [1, 2, 3, 4], [5, 6, 7, 8], [], []]},
+            {tubes: [[0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 0, 1], [2, 3, 4, 5], [6, 7, 8, 9], [0, 1, 2, 3], [4, 5, 6, 7], [8, 9, 0, 1], [2, 3, 4, 5], [6, 7, 8, 9], [], []]}
         ];
 
-        const gameBoard = document.getElementById('game-board');
-        const resetButton = document.getElementById('reset-button');
-        const levelDisplay = document.getElementById('level-display');
-        
-        let branches = [];
-        let selectedBird = null;
-        let fromBranchIndex = -1;
+        const DEFAULT_COLORS = [
+            '#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', 
+            '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2',
+            '#F8B4B4', '#A2D9CE', '#FF9FF3', '#54A0FF'
+        ];
+
+        // 게임 상태
+        let worlds = [];
+        let currentWorldIndex = 0;
         let currentLevel = 1;
+        let tubes = [];
+        let selectedTube = null;
+        let moves = 0;
+        let history = [];
+        let initialState = [];
+        let birdColors = [...DEFAULT_COLORS];
+        let selectedColorIndex = 0;
+        let hintCount = 3;
+        let editorCurrentLevel = 1; // 에디터에서 현재 편집 중인 레벨
 
-        function createSolvablePuzzle(config) {
-            let birdPool = [];
-            for (let i = 0; i < config.numColorsToUse; i++) {
-                for (let j = 0; j < config.branchCapacity; j++) {
-                    birdPool.push(colors[i]);
-                }
+        // 로컬 스토리지에서 데이터 로드
+        function loadData() {
+            const saved = localStorage.getItem('birdSortWorlds');
+            if (saved) {
+                worlds = JSON.parse(saved);
+            } else {
+                worlds = [{
+                    name: '기본 월드',
+                    levels: DEFAULT_LEVELS,
+                    colors: [...DEFAULT_COLORS],
+                    isDefault: true
+                }];
             }
-            
-            for (let i = birdPool.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [birdPool[i], birdPool[j]] = [birdPool[j], birdPool[i]];
-            }
-            
-            const newBranches = Array(config.numBranches).fill(0).map(() => []);
-            let branchIndices = Array.from(Array(config.numBranches).keys());
-            for (let i = branchIndices.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [branchIndices[i], branchIndices[j]] = [branchIndices[j], branchIndices[i]];
-            }
-            const filledBranchIndices = branchIndices.slice(0, config.numColorsToUse);
-            let birdPoolIndex = 0;
-            for (const branchIndex of filledBranchIndices) {
-                for (let j = 0; j < config.branchCapacity; j++) {
-                    newBranches[branchIndex].push(birdPool[birdPoolIndex++]);
-                }
-            }
-            return newBranches;
         }
 
-        function render(config) {
-            gameBoard.innerHTML = '';
-            branches.forEach((branch, branchIndex) => {
-                const branchDiv = document.createElement('div');
-                branchDiv.classList.add('branch');
-                branchDiv.addEventListener('click', () => onBranchClick(branchIndex));
+        // 데이터 저장
+        function saveData() {
+            localStorage.setItem('birdSortWorlds', JSON.stringify(worlds));
+        }
 
-                branch.forEach((birdEmoji, birdIndex) => {
-                    const birdDiv = document.createElement('div');
-                    birdDiv.classList.add('bird');
-                    birdDiv.textContent = birdEmoji;
-                    if (birdIndex === branch.length - 1) {
-                        birdDiv.addEventListener('click', (event) => {
-                            event.stopPropagation();
-                            onBirdClick(branchIndex);
-                        });
-                    }
-                    branchDiv.appendChild(birdDiv);
-                });
-                gameBoard.appendChild(branchDiv);
+        // SVG 새 생성
+        function createBirdSVG(color) {
+            return `data:image/svg+xml,${encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+                    <ellipse cx="50" cy="60" rx="28" ry="32" fill="${color}" stroke="#333" stroke-width="2.5"/>
+                    <circle cx="50" cy="32" r="20" fill="${color}" stroke="#333" stroke-width="2.5"/>
+                    <circle cx="44" cy="28" r="5" fill="white" stroke="#333" stroke-width="1.5"/>
+                    <circle cx="44" cy="28" r="2.5" fill="black"/>
+                    <polygon points="62,32 74,30 62,28" fill="#FF8C00" stroke="#333" stroke-width="1.5"/>
+                    <ellipse cx="32" cy="60" rx="18" ry="28" fill="${color}" opacity="0.85" stroke="#333" stroke-width="2"/>
+                    <ellipse cx="22" cy="70" rx="14" ry="22" fill="${color}" opacity="0.75" stroke="#333" stroke-width="2" transform="rotate(-25 22 70)"/>
+                    <line x1="44" y1="88" x2="40" y2="96" stroke="#FF6347" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="56" y1="88" x2="60" y2="96" stroke="#FF6347" stroke-width="3" stroke-linecap="round"/>
+                    <line x1="40" y1="96" x2="35" y2="96" stroke="#FF6347" stroke-width="2.5" stroke-linecap="round"/>
+                    <line x1="60" y1="96" x2="65" y2="96" stroke="#FF6347" stroke-width="2.5" stroke-linecap="round"/>
+                </svg>
+            `)}`;
+        }
+
+        // 월드 선택기 업데이트
+        function updateWorldSelector() {
+            const container = document.getElementById('worldSelector');
+            container.innerHTML = '';
+
+            worlds.forEach((world, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'world-btn' + (index === currentWorldIndex ? ' active' : '');
+                btn.innerHTML = `<span>🌍</span> ${world.name}`;
+                btn.onclick = () => switchWorld(index);
+                container.appendChild(btn);
             });
+
+            const addBtn = document.createElement('button');
+            addBtn.className = 'world-btn add-world';
+            addBtn.innerHTML = '<span>➕</span> 새 월드';
+            addBtn.onclick = () => openModal('newWorldModal');
+            container.appendChild(addBtn);
         }
-        
-        function onBirdClick(branchIndex) {
-            document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
 
-            if (fromBranchIndex === branchIndex) {
-                selectedBird = null;
-                fromBranchIndex = -1;
+        // 월드 전환
+        function switchWorld(index) {
+            currentWorldIndex = index;
+            currentLevel = 1;
+            birdColors = [...worlds[index].colors];
+            updateWorldSelector();
+            initLevel(1);
+        }
+
+        // 새 월드 생성
+        function createNewWorld() {
+            const name = document.getElementById('newWorldName').value.trim();
+            if (!name) {
+                alert('월드 이름을 입력하세요!');
                 return;
             }
-            
-            const clickedBranch = branches[branchIndex];
-            if (clickedBranch.length === 0) {
-                selectedBird = null;
-                fromBranchIndex = -1;
+
+            worlds.push({
+                name: name,
+                levels: [{tubes: [[0, 0, 1, 1], [2, 2, 0, 0], [1, 1, 2, 2], [], []]}],
+                colors: [...DEFAULT_COLORS],
+                isDefault: false
+            });
+
+            saveData();
+            currentWorldIndex = worlds.length - 1;
+            currentLevel = 1;
+            birdColors = [...worlds[currentWorldIndex].colors];
+            closeModal('newWorldModal');
+            updateWorldSelector();
+            initLevel(1);
+            openLevelEditor();
+        }
+
+        // 현재 월드 삭제
+        function deleteCurrentWorld() {
+            if (worlds[currentWorldIndex].isDefault) {
+                alert('기본 월드는 삭제할 수 없습니다!');
                 return;
             }
 
-            selectedBird = clickedBranch[clickedBranch.length - 1];
-            fromBranchIndex = branchIndex;
+            if (!confirm('정말 이 월드를 삭제하시겠습니까?')) {
+                return;
+            }
 
-            const branchElement = gameBoard.children[fromBranchIndex];
-            const topBirdColor = branches[fromBranchIndex][branches[fromBranchIndex].length - 1];
+            worlds.splice(currentWorldIndex, 1);
+            saveData();
+            currentWorldIndex = 0;
+            currentLevel = 1;
+            birdColors = [...worlds[0].colors];
+            closeModal('editorModal');
+            updateWorldSelector();
+            initLevel(1);
+        }
 
-            for (let i = branches[fromBranchIndex].length - 1; i >= 0; i--) {
-                if (branches[fromBranchIndex][i] === topBirdColor) {
-                    branchElement.children[i].classList.add('selected');
+        // 레벨 초기화
+        function initLevel(level) {
+            const currentWorld = worlds[currentWorldIndex];
+            if (level > currentWorld.levels.length) {
+                alert('축하합니다! 모든 레벨을 클리어했습니다! 🎉');
+                level = 1;
+            }
+            if (level < 1) level = 1;
+
+            currentLevel = level;
+            moves = 0;
+            selectedTube = null;
+            history = [];
+            hintCount = 3;
+
+            tubes = JSON.parse(JSON.stringify(currentWorld.levels[level - 1].tubes));
+            initialState = JSON.parse(JSON.stringify(tubes));
+
+            updateDisplay();
+            updateLevelNavButtons();
+        }
+
+        // 레벨 네비게이션 버튼 업데이트
+        function updateLevelNavButtons() {
+            const prevBtn = document.getElementById('prevLevelBtn');
+            const nextBtn = document.getElementById('nextLevelBtn');
+            const currentWorld = worlds[currentWorldIndex];
+
+            prevBtn.disabled = currentLevel <= 1;
+            nextBtn.disabled = currentLevel >= currentWorld.levels.length;
+        }
+
+        // 이전 레벨
+        function previousLevel() {
+            if (currentLevel > 1) {
+                initLevel(currentLevel - 1);
+            }
+        }
+
+        // 다음 레벨
+        function nextLevel() {
+            closeModal('winModal');
+            initLevel(currentLevel + 1);
+        }
+
+        // 화면 업데이트
+        function updateDisplay(animateNewBird = false) {
+            document.getElementById('level').textContent = currentLevel;
+            document.getElementById('moves').textContent = moves;
+            document.getElementById('undoBtn').disabled = history.length === 0;
+
+            const container = document.getElementById('tubesContainer');
+            container.innerHTML = '';
+
+            tubes.forEach((tube, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = 'tube-wrapper';
+                if (selectedTube === index) {
+                    wrapper.classList.add('selected');
+                }
+
+                const tubeDiv = document.createElement('div');
+                tubeDiv.className = 'tube';
+
+                tube.forEach((birdIndex, birdPos) => {
+                    const birdDiv = document.createElement('div');
+                    birdDiv.className = 'bird-in-tube';
+                    
+                    // 맨 위의 새(마지막 인덱스)는 항상 즉시 표시
+                    // 새로 이동된 새만 애니메이션 적용
+                    if (animateNewBird && birdPos === tube.length - 1) {
+                        birdDiv.classList.add('pop-in');
+                    }
+                    
+                    birdDiv.dataset.tubeIndex = index;
+                    birdDiv.dataset.birdPos = birdPos;
+
+                    const img = document.createElement('img');
+                    img.src = createBirdSVG(birdColors[birdIndex]);
+                    img.className = 'bird-svg';
+                    img.alt = 'bird';
+
+                    birdDiv.appendChild(img);
+                    tubeDiv.appendChild(birdDiv);
+                });
+
+                const branch = document.createElement('div');
+                branch.className = 'branch-base';
+
+                wrapper.appendChild(tubeDiv);
+                wrapper.appendChild(branch);
+                wrapper.onclick = () => selectTube(index);
+                container.appendChild(wrapper);
+            });
+
+            checkWin();
+        }
+
+        // 튜브 선택
+        function selectTube(index) {
+            const statusMsg = document.getElementById('statusMsg');
+
+            if (selectedTube === null) {
+                if (tubes[index].length > 0) {
+                    selectedTube = index;
+                    // 선택 시 전체 다시 그리지 않고 스타일만 변경
+                    document.querySelectorAll('.tube-wrapper').forEach((wrapper, i) => {
+                        if (i === index) {
+                            wrapper.classList.add('selected');
+                        } else {
+                            wrapper.classList.remove('selected');
+                        }
+                    });
+                    statusMsg.textContent = '✨ 이동할 튜브를 선택하세요';
+                }
+            } else {
+                if (selectedTube === index) {
+                    selectedTube = null;
+                    statusMsg.textContent = '';
+                    // 선택 해제 시에도 전체 다시 그리지 않고 스타일만 제거
+                    document.querySelectorAll('.tube-wrapper').forEach(wrapper => {
+                        wrapper.classList.remove('selected');
+                    });
                 } else {
-                    break;
+                    if (canMove(selectedTube, index)) {
+                        // 이동 애니메이션
+                        const fromTubeEl = document.querySelectorAll('.tube-wrapper')[selectedTube];
+                        const topBird = fromTubeEl.querySelector('.bird-in-tube:last-child');
+                        if (topBird) {
+                            topBird.classList.add('moving');
+                        }
+
+                        setTimeout(() => {
+                            history.push(JSON.parse(JSON.stringify(tubes)));
+                            const bird = tubes[selectedTube].pop();
+                            tubes[index].push(bird);
+                            moves++;
+                            
+                            const fromIndex = selectedTube;
+                            const toIndex = index;
+                            selectedTube = null;
+                            
+                            statusMsg.innerHTML = '<span style="color: #4CAF50;">✅ 완료!</span>';
+                            setTimeout(() => {
+                                statusMsg.textContent = '';
+                            }, 1000);
+                            
+                            // 전체 다시 그리지 않고 해당 튜브만 업데이트
+                            updateSingleTube(fromIndex);
+                            updateSingleTube(toIndex, true);
+                            
+                            // 이동 횟수만 업데이트
+                            document.getElementById('moves').textContent = moves;
+                            document.getElementById('undoBtn').disabled = history.length === 0;
+                            
+                            checkWin();
+                        }, 300);
+                    } else {
+                        statusMsg.innerHTML = '<span style="color: #f44336;">❌ 이동할 수 없습니다!</span>';
+                        setTimeout(() => {
+                            if (selectedTube !== null) {
+                                statusMsg.textContent = '✨ 이동할 튜브를 선택하세요';
+                            } else {
+                                statusMsg.textContent = '';
+                            }
+                        }, 1500);
+                    }
                 }
             }
         }
 
-        function onBranchClick(toBranchIndex) {
-            if (selectedBird && fromBranchIndex !== toBranchIndex) {
-                moveBird(toBranchIndex);
-            }
-        }
-
-        function moveBird(toBranchIndex) {
-            const config = levelConfigs[Math.min(currentLevel - 1, levelConfigs.length - 1)];
-            const fromBranch = branches[fromBranchIndex];
-            const toBranch = branches[toBranchIndex];
-
-            if (fromBranch.length === 0) return;
-
-            const topBirdColor = fromBranch[fromBranch.length - 1];
+        // 단일 튜브만 업데이트
+        function updateSingleTube(tubeIndex, animateNew = false) {
+            const wrappers = document.querySelectorAll('.tube-wrapper');
+            const wrapper = wrappers[tubeIndex];
+            const tubeDiv = wrapper.querySelector('.tube');
             
-            if (toBranch.length > 0 && toBranch[toBranch.length - 1] !== topBirdColor) {
-                deselectAll();
-                return;
-            }
-
-            let movingStack = [];
-            for (let i = fromBranch.length - 1; i >= 0; i--) {
-                if (fromBranch[i] === topBirdColor) {
-                    movingStack.unshift(fromBranch[i]);
-                } else {
-                    break;
-                }
-            }
-
-            const availableSpace = config.branchCapacity - toBranch.length;
-            const birdsToMoveCount = Math.min(movingStack.length, availableSpace);
-
-            if (birdsToMoveCount > 0) {
-                for (let i = 0; i < birdsToMoveCount; i++) {
-                    toBranch.push(fromBranch.pop());
+            // 튜브 내용 지우기
+            tubeDiv.innerHTML = '';
+            
+            // 새들 다시 그리기
+            tubes[tubeIndex].forEach((birdIndex, birdPos) => {
+                const birdDiv = document.createElement('div');
+                birdDiv.className = 'bird-in-tube';
+                
+                // 새로 추가된 새(맨 위)만 애니메이션
+                if (animateNew && birdPos === tubes[tubeIndex].length - 1) {
+                    birdDiv.classList.add('pop-in');
                 }
                 
-                selectedBird = null;
-                fromBranchIndex = -1;
+                birdDiv.dataset.tubeIndex = tubeIndex;
+                birdDiv.dataset.birdPos = birdPos;
 
-                render(config);
-                checkWinCondition(config);
-            } else {
-                deselectAll();
+                const img = document.createElement('img');
+                img.src = createBirdSVG(birdColors[birdIndex]);
+                img.className = 'bird-svg';
+                img.alt = 'bird';
+
+                birdDiv.appendChild(img);
+                tubeDiv.appendChild(birdDiv);
+            });
+        }
+
+        // 이동 가능 여부
+        function canMove(from, to) {
+            if (tubes[from].length === 0) return false;
+            if (tubes[to].length >= 4) return false;
+            if (tubes[to].length === 0) return true;
+
+            const fromBird = tubes[from][tubes[from].length - 1];
+            const toBird = tubes[to][tubes[to].length - 1];
+            return fromBird === toBird;
+        }
+
+        // 튜브 정렬 확인
+        function isTubeSorted(tube) {
+            if (tube.length === 0) return true;
+            if (tube.length !== 4) return false;
+            const firstBird = tube[0];
+            return tube.every(bird => bird === firstBird);
+        }
+
+        // 승리 확인
+        function checkWin() {
+            const usedColors = new Set(tubes.flat());
+            const numColors = usedColors.size;
+            const sortedTubes = tubes.filter(tube => isTubeSorted(tube) && tube.length > 0).length;
+
+            if (sortedTubes === numColors && numColors > 0) {
+                setTimeout(() => {
+                    document.getElementById('finalMoves').textContent = moves;
+                    openModal('winModal');
+                }, 700);
             }
         }
-        
-        function deselectAll() {
-            document.querySelectorAll('.selected').forEach(el => el.classList.remove('selected'));
-            selectedBird = null;
-            fromBranchIndex = -1;
+
+        // 되돌리기
+        function undoMove() {
+            if (history.length > 0) {
+                tubes = history.pop();
+                moves--;
+                selectedTube = null;
+                document.getElementById('statusMsg').textContent = '';
+                updateDisplay();
+            }
         }
 
-        function checkWinCondition(config) {
-            const isWin = branches.every(branch => {
-                return branch.length === 0 || 
-                       (branch.length === config.branchCapacity && new Set(branch).size === 1);
+        // 다시 시작
+        function restartLevel() {
+            tubes = JSON.parse(JSON.stringify(initialState));
+            moves = 0;
+            selectedTube = null;
+            history = [];
+            hintCount = 3;
+            document.getElementById('statusMsg').textContent = '';
+            updateDisplay();
+        }
+
+        // 힌트 표시
+        function showHint() {
+            if (hintCount <= 0) {
+                alert('힌트를 모두 사용했습니다!');
+                return;
+            }
+
+            const validMoves = findValidMoves();
+            if (validMoves.length === 0) {
+                alert('가능한 이동이 없습니다!');
+                return;
+            }
+
+            // 점수가 높은 이동 찾기
+            let bestMove = validMoves[0];
+            let bestScore = -1;
+
+            validMoves.forEach(move => {
+                let score = 0;
+                const fromBird = tubes[move.from][tubes[move.from].length - 1];
+                
+                // 같은 색이 많이 모이는 곳으로 이동하면 점수 높음
+                if (tubes[move.to].length > 0) {
+                    const toBird = tubes[move.to][tubes[move.to].length - 1];
+                    if (fromBird === toBird) {
+                        score += tubes[move.to].length * 10;
+                    }
+                }
+
+                // 튜브가 거의 완성되면 점수 높음
+                if (tubes[move.to].length === 3) score += 50;
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    bestMove = move;
+                }
             });
 
-            if (isWin) {
-                setTimeout(() => {
-                    alert(`🎉 축하합니다! 레벨 ${currentLevel} 클리어! 🎉`);
-                    if (currentLevel >= levelConfigs.length) {
-                        alert(`모든 레벨을 정복했습니다! 당신은 버드 소트 마스터입니다!`);
-                        currentLevel = 1;
-                    } else {
-                        currentLevel++;
+            hintCount--;
+            const statusMsg = document.getElementById('statusMsg');
+            statusMsg.innerHTML = `<span style="color: #17a2b8;">💡 힌트: ${bestMove.from + 1}번 → ${bestMove.to + 1}번 튜브 (남은 힌트: ${hintCount})</span>`;
+            setTimeout(() => {
+                statusMsg.textContent = '';
+            }, 3000);
+        }
+
+        // 유효한 이동 찾기
+        function findValidMoves() {
+            const moves = [];
+            for (let from = 0; from < tubes.length; from++) {
+                if (tubes[from].length === 0) continue;
+                for (let to = 0; to < tubes.length; to++) {
+                    if (from === to) continue;
+                    if (canMove(from, to)) {
+                        moves.push({ from, to });
                     }
-                    initGame();
-                }, 200);
+                }
+            }
+            return moves;
+        }
+
+        // 레벨 에디터 열기
+        function openLevelEditor() {
+            const currentWorld = worlds[currentWorldIndex];
+            editorCurrentLevel = currentLevel;
+            
+            birdColors = [...currentWorld.colors];
+            selectedColorIndex = 0;
+            
+            loadEditorLevel();
+            openModal('editorModal');
+        }
+
+        // 에디터에서 레벨 로드
+        function loadEditorLevel() {
+            const currentWorld = worlds[currentWorldIndex];
+            
+            document.getElementById('editorWorldInfo').innerHTML = `
+                <h3>${currentWorld.name}</h3>
+            `;
+
+            document.getElementById('editorLevelNum').textContent = editorCurrentLevel;
+            document.getElementById('editorTotalLevels').textContent = currentWorld.levels.length;
+
+            if (!currentWorld.isDefault) {
+                document.getElementById('deleteWorldBtn').style.display = 'block';
+            } else {
+                document.getElementById('deleteWorldBtn').style.display = 'none';
+            }
+
+            // 레벨 삭제 버튼 표시 여부
+            if (currentWorld.levels.length > 1) {
+                document.getElementById('deleteLevelBtn').style.display = 'block';
+            } else {
+                document.getElementById('deleteLevelBtn').style.display = 'none';
+            }
+
+            // 네비게이션 버튼 상태
+            document.getElementById('editorPrevBtn').disabled = editorCurrentLevel <= 1;
+            document.getElementById('editorNextBtn').disabled = editorCurrentLevel >= currentWorld.levels.length;
+
+            updateColorPalette();
+            
+            tubes = JSON.parse(JSON.stringify(currentWorld.levels[editorCurrentLevel - 1].tubes));
+            document.getElementById('numTubes').value = tubes.length;
+            updateEditorTubes();
+        }
+
+        // 에디터에서 이전 레벨
+        function editorPreviousLevel() {
+            if (editorCurrentLevel > 1) {
+                editorCurrentLevel--;
+                loadEditorLevel();
             }
         }
 
-        function initGame() {
-            const config = levelConfigs[Math.min(currentLevel - 1, levelConfigs.length - 1)];
-            levelDisplay.textContent = `레벨 ${config.level}`;
-            branches = createSolvablePuzzle(config);
-            selectedBird = null;
-            fromBranchIndex = -1;
-            render(config);
+        // 에디터에서 다음 레벨
+        function editorNextLevel() {
+            const currentWorld = worlds[currentWorldIndex];
+            if (editorCurrentLevel < currentWorld.levels.length) {
+                editorCurrentLevel++;
+                loadEditorLevel();
+            }
         }
-        
-        resetButton.addEventListener('click', () => {
-            currentLevel = 1;
-            initGame();
-        });
 
-        initGame();
+        // 새 레벨 추가
+        function addNewLevel() {
+            const currentWorld = worlds[currentWorldIndex];
+            
+            // 기본 레벨 템플릿 (3가지 색, 5개 튜브)
+            const newLevel = {
+                tubes: [
+                    [0, 0, 1, 1],
+                    [2, 2, 0, 0],
+                    [1, 1, 2, 2],
+                    [],
+                    []
+                ]
+            };
+
+            currentWorld.levels.push(newLevel);
+            saveData();
+            
+            editorCurrentLevel = currentWorld.levels.length;
+            loadEditorLevel();
+            
+            const statusMsg = document.createElement('div');
+            statusMsg.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #4CAF50; color: white; padding: 15px 30px; border-radius: 10px; font-weight: bold; z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);';
+            statusMsg.textContent = '✅ 새 레벨이 추가되었습니다!';
+            document.body.appendChild(statusMsg);
+            setTimeout(() => statusMsg.remove(), 2000);
+        }
+
+        // 현재 레벨 삭제
+        function deleteCurrentLevel() {
+            const currentWorld = worlds[currentWorldIndex];
+            
+            if (currentWorld.levels.length <= 1) {
+                alert('최소 1개의 레벨이 필요합니다!');
+                return;
+            }
+
+            if (!confirm(`레벨 ${editorCurrentLevel}을(를) 삭제하시겠습니까?`)) {
+                return;
+            }
+
+            currentWorld.levels.splice(editorCurrentLevel - 1, 1);
+            saveData();
+
+            // 삭제 후 레벨 위치 조정
+            if (editorCurrentLevel > currentWorld.levels.length) {
+                editorCurrentLevel = currentWorld.levels.length;
+            }
+
+            // 현재 플레이 중인 레벨도 조정
+            if (currentLevel > currentWorld.levels.length) {
+                currentLevel = currentWorld.levels.length;
+            }
+
+            loadEditorLevel();
+            
+            const statusMsg = document.createElement('div');
+            statusMsg.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #f44336; color: white; padding: 15px 30px; border-radius: 10px; font-weight: bold; z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);';
+            statusMsg.textContent = '🗑️ 레벨이 삭제되었습니다!';
+            document.body.appendChild(statusMsg);
+            setTimeout(() => statusMsg.remove(), 2000);
+        }
+
+        // 색상 팔레트 업데이트
+        function updateColorPalette() {
+            const container = document.getElementById('colorPalette');
+            container.innerHTML = '';
+
+            birdColors.forEach((color, index) => {
+                const item = document.createElement('div');
+                item.className = 'color-item';
+                if (index === selectedColorIndex) {
+                    item.style.borderColor = '#667eea';
+                    item.style.background = '#e8ecff';
+                }
+
+                const preview = document.createElement('div');
+                preview.className = 'color-preview';
+                preview.style.background = color;
+                preview.onclick = () => {
+                    selectedColorIndex = index;
+                    updateColorPalette();
+                    updateSelectedColorDisplay();
+                };
+
+                const input = document.createElement('input');
+                input.type = 'color';
+                input.value = color;
+                input.onchange = (e) => {
+                    birdColors[index] = e.target.value;
+                    updateColorPalette();
+                    updateSelectedColorDisplay();
+                };
+
+                const label = document.createElement('span');
+                label.textContent = `색상 ${index}`;
+                label.style.fontWeight = 'bold';
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = '🗑️';
+                deleteBtn.className = 'btn-cancel';
+                deleteBtn.style.padding = '5px 10px';
+                deleteBtn.style.fontSize = '0.8em';
+                deleteBtn.onclick = () => {
+                    if (birdColors.length <= 3) {
+                        alert('최소 3개의 색상이 필요합니다!');
+                        return;
+                    }
+                    birdColors.splice(index, 1);
+                    if (selectedColorIndex >= birdColors.length) {
+                        selectedColorIndex = birdColors.length - 1;
+                    }
+                    updateColorPalette();
+                    updateSelectedColorDisplay();
+                    updateEditorTubes();
+                };
+
+                item.appendChild(preview);
+                item.appendChild(input);
+                item.appendChild(label);
+                item.appendChild(deleteBtn);
+                container.appendChild(item);
+            });
+
+            updateSelectedColorDisplay();
+        }
+
+        // 선택된 색상 표시 업데이트
+        function updateSelectedColorDisplay() {
+            document.getElementById('selectedColorPreview').style.background = birdColors[selectedColorIndex];
+            document.getElementById('selectedColorName').textContent = `색상 ${selectedColorIndex}`;
+        }
+
+        // 새 색상 추가
+        function addNewColor() {
+            if (birdColors.length >= 12) {
+                alert('최대 12개의 색상까지 추가할 수 있습니다!');
+                return;
+            }
+            const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16).padStart(6, '0');
+            birdColors.push(randomColor);
+            selectedColorIndex = birdColors.length - 1;
+            updateColorPalette();
+        }
+
+        // 에디터 튜브 업데이트
+        function updateEditorTubes() {
+            const numTubes = parseInt(document.getElementById('numTubes').value);
+            const container = document.getElementById('tubeEditor');
+            container.innerHTML = '';
+
+            // 현재 튜브 상태 가져오기
+            const currentTubes = tubes.length > 0 ? JSON.parse(JSON.stringify(tubes)) : [];
+
+            // 튜브 수에 맞게 조정
+            while (currentTubes.length < numTubes) {
+                currentTubes.push([]);
+            }
+            while (currentTubes.length > numTubes) {
+                currentTubes.pop();
+            }
+
+            currentTubes.forEach((tube, tubeIndex) => {
+                const tubeContainer = document.createElement('div');
+                
+                const tubeDiv = document.createElement('div');
+                tubeDiv.className = 'editor-tube';
+
+                for (let i = 0; i < 4; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'editor-bird-slot';
+
+                    if (tube[i] !== undefined) {
+                        const img = document.createElement('img');
+                        img.src = createBirdSVG(birdColors[tube[i]]);
+                        slot.appendChild(img);
+
+                        // 색상 툴팁 추가
+                        const tooltip = document.createElement('div');
+                        tooltip.className = 'color-tooltip';
+                        tooltip.textContent = `색상 ${tube[i]}`;
+                        slot.appendChild(tooltip);
+
+                        const removeBtn = document.createElement('button');
+                        removeBtn.className = 'remove-btn';
+                        removeBtn.textContent = '✕';
+                        removeBtn.onclick = (e) => {
+                            e.stopPropagation();
+                            tube[i] = undefined;
+                            tube.splice(i, 1);
+                            updateEditorTubes();
+                        };
+                        slot.appendChild(removeBtn);
+                    }
+
+                    slot.onclick = () => {
+                        if (tube.length < 4 && tube[i] === undefined) {
+                            tube.push(selectedColorIndex);
+                            updateEditorTubes();
+                        }
+                    };
+
+                    tubeDiv.appendChild(slot);
+                }
+
+                const controls = document.createElement('div');
+                controls.className = 'tube-controls';
+
+                const clearBtn = document.createElement('button');
+                clearBtn.textContent = '🗑️ 비우기';
+                clearBtn.className = 'btn-cancel';
+                clearBtn.onclick = () => {
+                    currentTubes[tubeIndex] = [];
+                    updateEditorTubes();
+                };
+
+                controls.appendChild(clearBtn);
+                tubeContainer.appendChild(tubeDiv);
+                tubeContainer.appendChild(controls);
+                container.appendChild(tubeContainer);
+            });
+
+            tubes = currentTubes;
+        }
+
+        // 레벨 저장
+        function saveLevel() {
+            // 유효성 검사
+            const usedColors = new Set(tubes.flat());
+            const emptyTubes = tubes.filter(t => t.length === 0).length;
+
+            if (usedColors.size === 0) {
+                alert('최소 1개의 새를 배치해야 합니다!');
+                return;
+            }
+
+            if (emptyTubes < 2) {
+                alert('최소 2개의 빈 튜브가 필요합니다!');
+                return;
+            }
+
+            // 각 색상이 4개씩 있는지 확인
+            const colorCounts = {};
+            tubes.flat().forEach(color => {
+                colorCounts[color] = (colorCounts[color] || 0) + 1;
+            });
+
+            for (let color in colorCounts) {
+                if (colorCounts[color] !== 4) {
+                    alert(`색상 ${color}는 정확히 4마리가 필요합니다! (현재: ${colorCounts[color]}마리)`);
+                    return;
+                }
+            }
+
+            const currentWorld = worlds[currentWorldIndex];
+            currentWorld.levels[editorCurrentLevel - 1] = {
+                tubes: JSON.parse(JSON.stringify(tubes))
+            };
+            currentWorld.colors = [...birdColors];
+
+            saveData();
+            closeModal('editorModal');
+            
+            // 현재 플레이 중인 레벨이 수정되었다면 리로드
+            if (editorCurrentLevel === currentLevel) {
+                initLevel(currentLevel);
+            }
+            
+            const statusMsg = document.createElement('div');
+            statusMsg.style.cssText = 'position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #4CAF50; color: white; padding: 15px 30px; border-radius: 10px; font-weight: bold; z-index: 2000; box-shadow: 0 4px 15px rgba(0,0,0,0.3);';
+            statusMsg.textContent = '✅ 레벨이 저장되었습니다!';
+            document.body.appendChild(statusMsg);
+            setTimeout(() => statusMsg.remove(), 2000);
+        }
+
+        // 모달 열기/닫기
+        function openModal(id) {
+            document.getElementById(id).classList.add('show');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('show');
+            if (id === 'newWorldModal') {
+                document.getElementById('newWorldName').value = '';
+            }
+        }
+
+        // 게임 시작
+        loadData();
+        updateWorldSelector();
+        initLevel(1);
     </script>
 </body>
-
 </html>
-
-
-
-
-
-
-
